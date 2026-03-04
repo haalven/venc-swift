@@ -1,0 +1,4 @@
+.build/
+venc.app/
+.swiftpm/
+.DS_Store
