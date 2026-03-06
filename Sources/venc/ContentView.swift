@@ -4,7 +4,7 @@ import AppKit
 
 struct ContentView: View {
     @State private var inputPath = ""
-    @State private var resizeEnabled = true
+    @State private var resizeEnabled = false
     @State private var resizeWidth = "1280"
     @State private var resizeHeight = "720"
     @State private var codec: Codec = .hevc
