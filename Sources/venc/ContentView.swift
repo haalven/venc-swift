@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var codec: Codec = .hevc
     @State private var quality: Double = 66
     @State private var audio: AudioOption = .copy
+    @State private var volumeAdjust = ""
 
     private var command: String {
         CommandBuilder.build(
@@ -19,7 +20,8 @@ struct ContentView: View {
             resizeHeight: resizeHeight,
             codec: codec,
             quality: Int(quality),
-            audio: audio
+            audio: audio,
+            volumeAdjust: Int(volumeAdjust)
         )
     }
 
@@ -47,7 +49,8 @@ struct ContentView: View {
 
                     // Resize
                     Toggle("Resize", isOn: $resizeEnabled)
-                    if resizeEnabled {
+                        .disabled(codec == .copyVideo)
+                    if resizeEnabled && codec != .copyVideo {
                         HStack(spacing: 6) {
                             TextField("W", text: $resizeWidth)
                                 .frame(width: 64)
@@ -85,6 +88,7 @@ struct ContentView: View {
                             .monospacedDigit()
                             .frame(width: 28, alignment: .trailing)
                     }
+                    .disabled(codec == .copyVideo)
 
                     Divider()
 
@@ -100,6 +104,15 @@ struct ContentView: View {
                         .labelsHidden()
                         .pickerStyle(.segmented)
                         .fixedSize()
+                    }
+                    if audio == .aac {
+                        HStack(spacing: 6) {
+                            TextField("+/- dB", text: $volumeAdjust)
+                                .frame(width: 64)
+                            Text("dB")
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.leading, 20)
                     }
                 }
             }
