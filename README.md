@@ -1,5 +1,5 @@
-native macOS version of the [venc repo](https://github.com/haalven/venc), compiles to a 280 kB executable
+native macOS app, small executable
 
-pyqt6 -> swift migration was planned and executed by Opus
+planned and coded by Opus
 
 ![example screenshot](Screenshot.png)
