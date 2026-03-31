@@ -3,6 +3,7 @@ import Foundation
 enum Codec: String, CaseIterable, Identifiable {
     case hevc = "HEVC (h265)"
     case avc = "AVC (h264)"
+    case copyVideo = "copy video"
     var id: String { rawValue }
 }
 
@@ -33,7 +34,8 @@ enum CommandBuilder {
         resizeHeight: String,
         codec: Codec,
         quality: Int,
-        audio: AudioOption
+        audio: AudioOption,
+        volumeAdjust: Int? = nil
     ) -> String {
         let inp = inputPath.trimmingCharacters(in: .whitespaces)
         guard !inp.isEmpty else { return "" }
@@ -47,6 +49,8 @@ enum CommandBuilder {
             vOpts = "-c:v h264_videotoolbox"
         case .hevc:
             vOpts = "-c:v hevc_videotoolbox -tag:v hvc1"
+        case .copyVideo:
+            vOpts = "-c:v copy"
         }
 
         let aOpts: String
@@ -59,21 +63,27 @@ enum CommandBuilder {
             aOpts = "-c:a copy"
         }
 
-        let outp = inp + ".videotoolbox.mp4"
+        let outp = inp + ".ffmpeg.mp4"
 
-        var parts = [
-            "ffmpeg",
-            "-hwaccel videotoolbox",
-            "-hwaccel_output_format videotoolbox_vld",
-            "-i \(shellQuote(inp))",
-        ]
-        if resizeEnabled {
-            let scaleFilter = "scale_vt=w=\(w):h=\(h)"
-            parts.append("-vf \(shellQuote(scaleFilter))")
+        var parts = ["ffmpeg"]
+        if codec != .copyVideo {
+            parts.append(contentsOf: [
+                "-hwaccel videotoolbox",
+                "-hwaccel_output_format videotoolbox_vld",
+            ])
+        }
+        parts.append("-i \(shellQuote(inp))")
+        if codec != .copyVideo && resizeEnabled {
+            parts.append("-vf \"scale_vt=w=\(w):h=\(h)\"")
+        }
+        if audio == .aac, let db = volumeAdjust {
+            parts.append("-af \"volume=\(db)dB\"")
+        }
+        parts.append(vOpts)
+        if codec != .copyVideo {
+            parts.append("-q:v \(quality)")
         }
         parts.append(contentsOf: [
-            vOpts,
-            "-q:v \(quality)",
             aOpts,
             shellQuote(outp),
         ])
